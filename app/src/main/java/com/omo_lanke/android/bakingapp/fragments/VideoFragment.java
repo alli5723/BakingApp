@@ -2,17 +2,16 @@ package com.omo_lanke.android.bakingapp.fragments;
 
 
 import android.content.Context;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.widget.ImageView;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -25,7 +24,6 @@ import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
-import com.google.android.exoplayer2.source.ConcatenatingMediaSource;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
@@ -33,16 +31,13 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
-import com.google.android.exoplayer2.util.Util;
-import com.omo_lanke.android.bakingapp.MainActivity;
 import com.omo_lanke.android.bakingapp.R;
 import com.omo_lanke.android.bakingapp.data.Step;
-import com.squareup.picasso.Picasso;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -64,6 +59,12 @@ public class VideoFragment extends Fragment implements ExoPlayer.EventListener{
     TextView frag_info;
     Context context;
 
+    @BindView(R.id.buttonNext)
+    Button buttonNext;
+
+    @BindView(R.id.buttonPrevious)
+    Button buttonPrevious;
+
     long playbackPosition = 0L;
     int currentWindow = 0;
     boolean playWhenReady = true;
@@ -71,7 +72,23 @@ public class VideoFragment extends Fragment implements ExoPlayer.EventListener{
     String TAG = VideoFragment.class.getSimpleName();
 
     private SimpleExoPlayer mExoPlayer;
-    private MediaSessionCompat mMediaSession;
+    private PlaybackStateCompat.Builder mStateBuilder;
+
+    VideoFragment.OnVideoClickListener videoCallback;
+
+    public interface OnVideoClickListener{
+        void onVideoButtonSelected(int button);
+    }
+
+    @Override
+    public void onAttach(Context context){
+        super.onAttach(context);
+        try{
+            videoCallback = (VideoFragment.OnVideoClickListener)context;
+        }catch (ClassCastException e){
+            throw new ClassCastException(context.toString() + " must implement OnVideoClickListener");
+        }
+    }
 
     public VideoFragment() {
         // Required empty public constructor
@@ -108,21 +125,6 @@ public class VideoFragment extends Fragment implements ExoPlayer.EventListener{
         View view = inflater.inflate(R.layout.fragment_video, container, false);
         context = this.getContext();
         ButterKnife.bind(this, view);
-        mMediaSession = new MediaSessionCompat(context, TAG);
-        mMediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
-                MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
-        mMediaSession.setMediaButtonReceiver(null);
-
-        PlaybackStateCompat mStateBuilder = new PlaybackStateCompat.Builder()
-                .setActions(
-                        PlaybackStateCompat.ACTION_PLAY |
-                                PlaybackStateCompat.ACTION_PAUSE |
-                                PlaybackStateCompat.ACTION_PLAY_PAUSE |
-                                PlaybackStateCompat.ACTION_SKIP_TO_NEXT |
-                                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
-                ).build();
-
-        mMediaSession.setPlaybackState(mStateBuilder);
 
         frag_info.setText(step.getDescription());
         if(!(step.getThumbnailURL()).isEmpty() || !(step.getVideoURL()).isEmpty()) {
@@ -161,7 +163,7 @@ public class VideoFragment extends Fragment implements ExoPlayer.EventListener{
             mPlayerView.setPlayer(mExoPlayer);
 
             mExoPlayer.prepare(buildMediaSource());
-            mExoPlayer.setPlayWhenReady(true);
+            mExoPlayer.setPlayWhenReady(playWhenReady);
             if(currentWindow != 0 && playbackPosition != 0L){
                 mExoPlayer.seekTo(currentWindow, playbackPosition);
             }
@@ -197,13 +199,23 @@ public class VideoFragment extends Fragment implements ExoPlayer.EventListener{
         mExoPlayer = null;
     }
 
+    @OnClick(R.id.buttonNext)
+    public void buttonNext(){
+        videoCallback.onVideoButtonSelected(1);
+    }
+
+    @OnClick(R.id.buttonPrevious)
+    public void buttonPrevious(){
+        videoCallback.onVideoButtonSelected(0);
+    }
+
     @Override
     public void onTimelineChanged(Timeline timeline, Object o) {
 
     }
 
     @Override
-    public void onTracksChanged(TrackGroupArray trackGroupArray, TrackSelectionArray trackSelectionArray) {
+    public void onTracksChanged(TrackGroupArray trackGroupArray, TrackSelectionArray trackSelectionArray){
 
     }
 
@@ -213,7 +225,16 @@ public class VideoFragment extends Fragment implements ExoPlayer.EventListener{
     }
 
     @Override
-    public void onPlayerStateChanged(boolean b, int i) {
+    public void onPlayerStateChanged(boolean playWhenReady, int playBackState) {
+
+        if(playBackState == ExoPlayer.STATE_READY  && playWhenReady) {
+            mStateBuilder.setState(PlaybackStateCompat.STATE_PLAYING,
+                    mExoPlayer.getCurrentPosition(), 1f);
+        }else if((playBackState == ExoPlayer.STATE_READY)){
+
+            mStateBuilder.setState(PlaybackStateCompat.STATE_PAUSED,
+                    mExoPlayer.getCurrentPosition(), 1f);
+        }
 
     }
 

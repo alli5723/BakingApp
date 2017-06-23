@@ -10,10 +10,12 @@ import com.omo_lanke.android.bakingapp.data.Step;
 import com.omo_lanke.android.bakingapp.fragments.StepsFragment;
 import com.omo_lanke.android.bakingapp.fragments.VideoFragment;
 
-public class DetailsActivity extends AppCompatActivity implements StepsFragment.OnStepClickListener{
+public class DetailsActivity extends AppCompatActivity implements StepsFragment.OnStepClickListener, VideoFragment.OnVideoClickListener{
 
     Recipe recipe = null;
     private boolean mTwoPane;
+    Step selectedStep;
+    int selectedPosition = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +32,12 @@ public class DetailsActivity extends AppCompatActivity implements StepsFragment.
         if(findViewById(R.id.fragment_video) != null){
             mTwoPane = true;
             //Set the first video as what should be playing on the right side
+            VideoFragment videoFragment = VideoFragment.newInstance(recipe.getSteps().get(0));
+
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.fragment_video, videoFragment)
+                    .commit();
         }else {
             mTwoPane = false;
         }
@@ -58,6 +66,12 @@ public class DetailsActivity extends AppCompatActivity implements StepsFragment.
     @Override
     public void onStepSelected(int position, Step step) {
         //change video to selected
+        this.selectedStep = step;
+        selectedPosition = position;
+        changeVideoView(position, step);
+    }
+
+    public void changeVideoView(int position, Step step){
         if(mTwoPane){
             VideoFragment videoFragment = VideoFragment.newInstance(step);
 
@@ -78,6 +92,27 @@ public class DetailsActivity extends AppCompatActivity implements StepsFragment.
                     .addToBackStack("Details")
                     .commit();
         }
+    }
 
+    @Override
+    public void onVideoButtonSelected(int button) {
+        if(button == 0){//previous
+            selectedPosition -= 1;
+            if (selectedPosition < 0){
+                //Show snackbare
+                return;
+            }else{
+                selectedStep = recipe.getSteps().get(selectedPosition);
+            }
+        }else{//next
+            selectedPosition += 1;
+            if (selectedPosition > recipe.getSteps().size()){
+                //Show snackbar out of bound
+                return;
+            }else{
+                selectedStep = recipe.getSteps().get(selectedPosition);
+            }
+        }
+        changeVideoView(selectedPosition, selectedStep);
     }
 }

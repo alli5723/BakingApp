@@ -9,13 +9,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SimpleAdapter;
 
 import com.omo_lanke.android.bakingapp.R;
 import com.omo_lanke.android.bakingapp.adapters.IngredientAdapter;
 import com.omo_lanke.android.bakingapp.adapters.StepAdapter;
 import com.omo_lanke.android.bakingapp.data.Ingredient;
-import com.omo_lanke.android.bakingapp.data.Recipe;
 import com.omo_lanke.android.bakingapp.data.Step;
 
 import java.util.ArrayList;
