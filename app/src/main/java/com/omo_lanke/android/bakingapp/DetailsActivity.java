@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import com.omo_lanke.android.bakingapp.data.Recipe;
 import com.omo_lanke.android.bakingapp.data.Step;
@@ -68,10 +69,10 @@ public class DetailsActivity extends AppCompatActivity implements StepsFragment.
         //change video to selected
         this.selectedStep = step;
         selectedPosition = position;
-        changeVideoView(position, step);
+        changeVideoView(position, step, false);
     }
 
-    public void changeVideoView(int position, Step step){
+    public void changeVideoView(int position, Step step, boolean replace){
         if(mTwoPane){
             VideoFragment videoFragment = VideoFragment.newInstance(step);
 
@@ -87,32 +88,42 @@ public class DetailsActivity extends AppCompatActivity implements StepsFragment.
                     newInstance(step);
 
             FragmentManager fragmentManager = getSupportFragmentManager();
-            fragmentManager.beginTransaction()
-                    .add(R.id.fragment_container, videoFragment)
-                    .addToBackStack("Details")
-                    .commit();
+            if (replace) {
+                fragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, videoFragment)
+                        .commit();
+            }else{
+                fragmentManager.beginTransaction()
+                        .add(R.id.fragment_container, videoFragment)
+                        .addToBackStack("Details")
+                        .commit();
+            }
         }
     }
 
     @Override
     public void onVideoButtonSelected(int button) {
         if(button == 0){//previous
-            selectedPosition -= 1;
-            if (selectedPosition < 0){
+            int newIndex = selectedPosition - 1;
+            Log.e("Log", "onVideoButtonSelected: "+ selectedPosition + " Total is " + recipe.getSteps().size());
+            if (newIndex < 0){
                 //Show snackbare
                 return;
             }else{
+                selectedPosition = newIndex;
                 selectedStep = recipe.getSteps().get(selectedPosition);
             }
         }else{//next
-            selectedPosition += 1;
-            if (selectedPosition > recipe.getSteps().size()){
+            int newIndex = selectedPosition + 1;
+            Log.e("Log", "onVideoButtonSelected: "+ selectedPosition + " Total is " + recipe.getSteps().size());
+            if (newIndex >= recipe.getSteps().size()){
                 //Show snackbar out of bound
                 return;
             }else{
+                selectedPosition = newIndex;
                 selectedStep = recipe.getSteps().get(selectedPosition);
             }
         }
-        changeVideoView(selectedPosition, selectedStep);
+        changeVideoView(selectedPosition, selectedStep, true);
     }
 }

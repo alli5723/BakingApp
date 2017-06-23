@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.TextView;
 
 import com.omo_lanke.android.bakingapp.R;
 import com.omo_lanke.android.bakingapp.data.Ingredient;
@@ -53,10 +54,10 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.In
     }
 
     public class IngredientAdapterViewHolder extends RecyclerView.ViewHolder {
-        public CheckBox textView;
+        public TextView textView;
         IngredientAdapterViewHolder(View view){
             super(view);
-            textView = (CheckBox)view.findViewById(R.id.ingredientCheckBox);
+            textView = (TextView)view.findViewById(R.id.ingredientCheckBox);
         }
     }
 
