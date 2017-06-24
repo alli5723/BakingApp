@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ScrollView;
 
 import com.omo_lanke.android.bakingapp.R;
 import com.omo_lanke.android.bakingapp.adapters.IngredientAdapter;
@@ -49,6 +50,11 @@ public class StepsFragment extends Fragment implements StepAdapter.StepAdapterOn
 
     @BindView(R.id.stepsList)
     RecyclerView stepsList;
+
+    @BindView(R.id.scrollView)
+    ScrollView scrollView;
+
+    View view;
 
     OnStepClickListener stepCallback;
 
@@ -137,6 +143,14 @@ public class StepsFragment extends Fragment implements StepAdapter.StepAdapterOn
             Parcelable savedRecyclerLayoutState2 = savedInstanceState.getParcelable(BUNDLE_RECYCLER_LAYOUT2);
             stepsList.getLayoutManager().onRestoreInstanceState(savedRecyclerLayoutState2);
 
+            final int[] position = savedInstanceState.getIntArray("ARTICLE_SCROLL_POSITION");
+            if(position != null)
+                scrollView.post(new Runnable() {
+                    public void run() {
+                        scrollView.scrollTo(position[0], position[1]);
+                    }
+                });
+
         }
     }
 
@@ -144,6 +158,8 @@ public class StepsFragment extends Fragment implements StepAdapter.StepAdapterOn
     public void onSaveInstanceState(Bundle outState) {
         outState.putParcelable(BUNDLE_RECYCLER_LAYOUT, ingredientsList.getLayoutManager().onSaveInstanceState());
         outState.putParcelable(BUNDLE_RECYCLER_LAYOUT2, stepsList.getLayoutManager().onSaveInstanceState());
+        outState.putIntArray("SCROLL_POSITION",
+                new int[]{ scrollView.getScrollX(), scrollView.getScrollY()});
 
         outState.putParcelableArrayList(BUNDLE_INGREDIENT_LIST,ingredients);
         outState.putParcelableArrayList(BUNDLE_STEP_LIST,steps);
@@ -155,7 +171,7 @@ public class StepsFragment extends Fragment implements StepAdapter.StepAdapterOn
                              Bundle savedInstanceState) {
         Log.e(TAG, "onCreateView: " );
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_steps, container, false);
+        view = inflater.inflate(R.layout.fragment_steps, container, false);
         ButterKnife.bind(this, view);
         return view;
     }

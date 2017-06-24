@@ -51,7 +51,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeAdap
                         .into(holder.imageViewRecipe);
             }
         }catch (Exception ex){
-            
+
         }
     }
 
