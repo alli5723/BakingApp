@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -34,6 +35,7 @@ import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.omo_lanke.android.bakingapp.R;
 import com.omo_lanke.android.bakingapp.data.Step;
+import com.squareup.picasso.Picasso;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -54,6 +56,9 @@ public class VideoFragment extends Fragment implements ExoPlayer.EventListener{
 
     @BindView(R.id.playerView)
     SimpleExoPlayerView mPlayerView;
+
+    @BindView(R.id.imageView)
+    ImageView imageView;
 
     @BindView(R.id.frag_info)
     TextView frag_info;
@@ -127,8 +132,12 @@ public class VideoFragment extends Fragment implements ExoPlayer.EventListener{
         ButterKnife.bind(this, view);
 
         frag_info.setText(step.getDescription());
+
         if(!(step.getThumbnailURL()).isEmpty() || !(step.getVideoURL()).isEmpty()) {
             initializePlayer();
+            if (!step.getThumbnailURL().isEmpty()){
+                Picasso.with(context).load(step.getThumbnailURL()).into(imageView);
+            }
         }else {
             mPlayerView.setVisibility(View.GONE);
         }

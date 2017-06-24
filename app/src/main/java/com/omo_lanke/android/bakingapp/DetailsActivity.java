@@ -1,6 +1,7 @@
 package com.omo_lanke.android.bakingapp;
 
 import android.content.Intent;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -18,6 +19,9 @@ public class DetailsActivity extends AppCompatActivity implements StepsFragment.
     Step selectedStep;
     int selectedPosition = 0;
 
+    VideoFragment videoFragment;
+    Fragment stepsFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,13 +31,26 @@ public class DetailsActivity extends AppCompatActivity implements StepsFragment.
         recipe = MainActivity.selectedRecipe;
 
         getSupportActionBar().setTitle(recipe.getName());
-        StepsFragment stepsFragment = StepsFragment.
-                newInstance(recipe.getIngredients(), recipe.getSteps());//new StepsFragment();
+
+        if (savedInstanceState != null) {
+            Log.d("Saved", "onCreate: Retrieve Details Activity here");
+            //Restore the fragment's instance
+            stepsFragment = getSupportFragmentManager().getFragment(savedInstanceState, "steps");
+        }else {
+
+            stepsFragment = StepsFragment.
+                    newInstance(recipe.getIngredients(), recipe.getSteps());//new StepsFragment();
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction()
+                    .add(R.id.fragment_container, stepsFragment)
+                    .commit();
+
+        }
 
         if(findViewById(R.id.fragment_video) != null){
             mTwoPane = true;
             //Set the first video as what should be playing on the right side
-            VideoFragment videoFragment = VideoFragment.newInstance(recipe.getSteps().get(0));
+            videoFragment = VideoFragment.newInstance(recipe.getSteps().get(0));
 
             FragmentManager fragmentManager = getSupportFragmentManager();
             fragmentManager.beginTransaction()
@@ -43,10 +60,7 @@ public class DetailsActivity extends AppCompatActivity implements StepsFragment.
             mTwoPane = false;
         }
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .add(R.id.fragment_container, stepsFragment)
-                .commit();
+
     }
 
     @Override
@@ -62,6 +76,12 @@ public class DetailsActivity extends AppCompatActivity implements StepsFragment.
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState){
+        getSupportFragmentManager().putFragment(outState, "steps", stepsFragment);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -107,7 +127,7 @@ public class DetailsActivity extends AppCompatActivity implements StepsFragment.
             int newIndex = selectedPosition - 1;
             Log.e("Log", "onVideoButtonSelected: "+ selectedPosition + " Total is " + recipe.getSteps().size());
             if (newIndex < 0){
-                //Show snackbare
+                //Show snackbar
                 return;
             }else{
                 selectedPosition = newIndex;

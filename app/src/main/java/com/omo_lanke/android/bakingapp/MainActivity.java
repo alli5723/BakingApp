@@ -8,7 +8,10 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.test.espresso.IdlingResource;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -20,6 +23,7 @@ import android.widget.ProgressBar;
 import com.omo_lanke.android.bakingapp.adapters.RecipeAdapter;
 import com.omo_lanke.android.bakingapp.api.BakingService;
 import com.omo_lanke.android.bakingapp.data.Recipe;
+import com.omo_lanke.android.bakingapp.idlingResource.SimpleIdlingResource;
 import com.omo_lanke.android.bakingapp.utils.StoreRecipe;
 
 import java.util.ArrayList;
@@ -31,7 +35,8 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity implements RecipeAdapter.RecipeAdapterOnClickHandler{
+public class MainActivity extends AppCompatActivity
+        implements RecipeAdapter.RecipeAdapterOnClickHandler{
 
     @BindView(R.id.progress)
     ProgressBar progress;
@@ -49,6 +54,16 @@ public class MainActivity extends AppCompatActivity implements RecipeAdapter.Rec
     private static final String BUNDLE_RECYCLER_LAYOUT = "classname.recycler.layout";
     private static final String BUNDLE_RECIPE_LIST = "recipe_list";
 
+    @Nullable private SimpleIdlingResource idlingResource;
+
+    @NonNull
+    public IdlingResource getIdlingResource() {
+        if (idlingResource == null) {
+            idlingResource = new SimpleIdlingResource();
+        }
+        return idlingResource;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,6 +78,9 @@ public class MainActivity extends AppCompatActivity implements RecipeAdapter.Rec
         recipeList.setLayoutManager(layoutManager);
         recipeList.setHasFixedSize(true);
         recipeList.setAdapter(recipeAdapter);
+
+        // Get the IdlingResource instance
+        getIdlingResource();
 
         if (!isNetworkOnline()){
             final Snackbar snackBar = Snackbar.make(progress,
@@ -94,6 +112,9 @@ public class MainActivity extends AppCompatActivity implements RecipeAdapter.Rec
     }
 
     public void apiCall(){
+        if(idlingResource != null){
+            idlingResource.setIdleState(false);
+        }
         progress.setVisibility(View.VISIBLE);
         Call<List<Recipe>> recipeCall = new BakingService().endpoints().getRecipe();
 
@@ -103,6 +124,9 @@ public class MainActivity extends AppCompatActivity implements RecipeAdapter.Rec
                 recipes = new ArrayList<Recipe>(response.body());
                 try {
                     recipeAdapter.resetData(recipes);
+                    if(idlingResource != null){
+                        idlingResource.setIdleState(true);
+                    }
                 }catch (Exception ex){
 
                 }

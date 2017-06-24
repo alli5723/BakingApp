@@ -6,12 +6,15 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.omo_lanke.android.bakingapp.R;
 import com.omo_lanke.android.bakingapp.data.Step;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
+
 
 /**
  * Created by omo_lanke on 20/06/2017.
@@ -41,6 +44,12 @@ public class StepAdapter extends RecyclerView.Adapter<StepAdapter.StepAdapterVie
         holder.textViewIndex.setText(position +".");
         holder.textViewStep.setText(step.getShortDescription().trim());
 
+        if (!(step.getThumbnailURL()).isEmpty()) {
+            Picasso.with(context).load(step.getThumbnailURL())
+                    .placeholder(android.R.drawable.ic_menu_report_image)
+                    .error(android.R.drawable.ic_menu_report_image)
+                    .into(holder.imageViewStep);
+        }
     }
 
     @Override
@@ -62,10 +71,12 @@ public class StepAdapter extends RecyclerView.Adapter<StepAdapter.StepAdapterVie
     public class StepAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public TextView textViewStep;
         public TextView textViewIndex;
+        public ImageView imageViewStep;
         StepAdapterViewHolder(View view){
             super(view);
             textViewIndex = (TextView)view.findViewById(R.id.textViewIndex);
             textViewStep = (TextView)view.findViewById(R.id.textViewStep);
+            imageViewStep = (ImageView)view.findViewById(R.id.imageViewStep);
             view.setOnClickListener(this);
         }
 
@@ -74,6 +85,11 @@ public class StepAdapter extends RecyclerView.Adapter<StepAdapter.StepAdapterVie
             int pos = getAdapterPosition();
             clickHandler.onClick(pos, steps.get(pos));
         }
+    }
+
+    public void resetData(List<Step> steps) {
+        this.steps = steps;
+        notifyDataSetChanged();
     }
 
 }

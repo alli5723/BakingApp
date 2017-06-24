@@ -42,22 +42,17 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeAdap
         Recipe recipe = recipes.get(position);
         holder.textViewRecipeServing.setText("Servings: " + recipe.getServings());
         holder.textViewRecipeName.setText(recipe.getName());
-        int img = R.drawable.recipe;
-        switch (recipe.getName()){
-            case "Nutella Pie" :
-                img = R.drawable.nuttella;
-                break;
-            case "Brownies" :
-                img = R.drawable.brownies;
-                break;
-            case "Yellow Cake" :
-                img = R.drawable.yellowcake;
-                break;
-            case "Cheesecake" :
-                img = R.drawable.cheesecake;
-                break;
+
+        try {
+            if (!(recipe.getImage()).isEmpty()) {
+                Picasso.with(context).load(recipe.getImage())
+                        .placeholder(R.drawable.recipe)
+                        .error(R.drawable.recipe)
+                        .into(holder.imageViewRecipe);
+            }
+        }catch (Exception ex){
+            
         }
-        Picasso.with(context).load(img).placeholder(R.drawable.recipe).into(holder.imageViewRecipe);
     }
 
     @Override
